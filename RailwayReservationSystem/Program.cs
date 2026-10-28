@@ -1,5 +1,4 @@
-﻿//Console.WriteLine("Hello, World!");
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
 using RailwayReservationSystem.Models;
 using RailwayReservationSystem.Repositories;
 using RailwayReservationSystem.Services;
