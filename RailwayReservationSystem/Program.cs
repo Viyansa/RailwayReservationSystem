@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.SqlClient;
+﻿
+using Microsoft.Data.SqlClient;
 using RailwayReservationSystem.Models;
 using RailwayReservationSystem.Repositories;
 using RailwayReservationSystem.Services;
@@ -8,24 +9,24 @@ namespace RailwayReservationSystem;
 public class Program
 {
     private static readonly string connectionString =
-        @"Server=.\SQLEXPRESS;Database=RailwayReservationDB;Trusted_Connection=True;TrustServerCertificate=True;";
+        @"Server=.\SQLEXPRESS;Database=RailwayReservationDB;Trusted_Connection=True;TrustServerCertificate=True;Connect Timeout=30;";
 
-    public static void Main()
+    public static async Task Main(string[] args)
     {
         try
         {
             using SqlConnection connection =
                 new SqlConnection(connectionString);
 
-            connection.Open();
+            await connection.OpenAsync();
+
             Console.WriteLine("Database connected successfully.");
         }
         catch (SqlException ex)
         {
             Console.WriteLine("Database connection failed.");
             Console.WriteLine(ex.Message);
-            Console.WriteLine(
-                "Check your SQL Server instance and connection string.");
+            Console.WriteLine("Check your SQL Server instance and connection string.");
             return;
         }
 
@@ -97,22 +98,26 @@ public class Program
 
                     case "0":
                         running = false;
-                        Console.WriteLine("Thank you for using the system.");
+                        Console.WriteLine(
+                            "Thank you for using the system.");
                         break;
 
                     default:
-                        Console.WriteLine("Invalid choice. Try again.");
+                        Console.WriteLine(
+                            "Invalid choice. Try again.");
                         break;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Operation failed: " + ex.Message);
+                Console.WriteLine(
+                    "Operation failed: " + ex.Message);
             }
         }
     }
 
-    private static void RegisterPassenger(PassengerService service)
+    private static void RegisterPassenger(
+        PassengerService service)
     {
         Passenger passenger = new Passenger();
 
@@ -130,15 +135,20 @@ public class Program
         Console.Write("Enter email: ");
         passenger.Email = Console.ReadLine()?.Trim() ?? "";
 
-        int passengerId = service.RegisterPassenger(passenger);
+        int passengerId =
+            service.RegisterPassenger(passenger);
 
-        Console.WriteLine("Passenger registered successfully.");
+        Console.WriteLine(
+            "Passenger registered successfully.");
+
         Console.WriteLine("Passenger ID: " + passengerId);
     }
 
-    private static void ViewPassengers(PassengerService service)
+    private static void ViewPassengers(
+        PassengerService service)
     {
-        List<Passenger> passengers = service.GetAllPassengers();
+        List<Passenger> passengers =
+            service.GetAllPassengers();
 
         if (passengers.Count == 0)
         {
@@ -161,7 +171,8 @@ public class Program
         }
     }
 
-    private static void ViewTrains(TrainService service)
+    private static void ViewTrains(
+        TrainService service)
     {
         List<Train> trains = service.GetAllTrains();
 
@@ -185,7 +196,8 @@ public class Program
         }
     }
 
-    private static void CheckAvailability(TrainService service)
+    private static void CheckAvailability(
+        TrainService service)
     {
         int trainId = ReadInt("Enter train ID: ");
 
@@ -198,44 +210,71 @@ public class Program
         }
 
         Console.WriteLine("Train: " + train.TrainName);
-        Console.WriteLine("Route: " + train.Source + " to " + train.Destination);
-        Console.WriteLine("Available seats: " + train.AvailableSeats);
-        Console.WriteLine("Fare per seat: " + train.Fare.ToString("C"));
+
+        Console.WriteLine(
+            "Route: " + train.Source + " to " +
+            train.Destination);
+
+        Console.WriteLine(
+            "Available seats: " + train.AvailableSeats);
+
+        Console.WriteLine(
+            "Fare per seat: " + train.Fare.ToString("C"));
     }
 
-    private static void BookTicket(BookingService service)
+    private static void BookTicket(
+        BookingService service)
     {
         Booking booking = new Booking();
 
-        booking.PassengerId = ReadInt("Enter passenger ID: ");
-        booking.TrainId = ReadInt("Enter train ID: ");
+        booking.PassengerId =
+            ReadInt("Enter passenger ID: ");
 
-        Console.Write("Enter journey date (yyyy-MM-dd): ");
+        booking.TrainId =
+            ReadInt("Enter train ID: ");
 
-        if (!DateTime.TryParse(
-            Console.ReadLine(),
+        Console.Write(
+            "Enter journey date (yyyy-MM-dd): ");
+
+        string? dateInput = Console.ReadLine();
+
+        if (!DateTime.TryParseExact(
+            dateInput,
+            "yyyy-MM-dd",
+            System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.None,
             out DateTime journeyDate))
         {
-            Console.WriteLine("Invalid date format.");
+            Console.WriteLine(
+                "Invalid date. Use yyyy-MM-dd.");
+
             return;
         }
 
         booking.JourneyDate = journeyDate;
-        booking.NumberOfSeats = ReadInt("Enter number of seats: ");
+
+        booking.NumberOfSeats =
+            ReadInt("Enter number of seats: ");
 
         string pnr = service.BookTicket(booking);
 
         Console.WriteLine("Ticket booked successfully.");
         Console.WriteLine("PNR: " + pnr);
-        Console.WriteLine("Total fare: " + booking.TotalFare.ToString("C"));
+
+        Console.WriteLine(
+            "Total fare: " + booking.TotalFare.ToString("C"));
     }
 
-    private static void CheckPNR(BookingService service)
+    private static void CheckPNR(
+        BookingService service)
     {
         Console.Write("Enter PNR: ");
-        string pnr = Console.ReadLine()?.Trim() ?? "";
 
-        BookingDetailView? booking = service.GetBookingByPNR(pnr);
+        string pnr =
+            Console.ReadLine()?.Trim() ?? "";
+
+        BookingDetailView? booking =
+            service.GetBookingByPNR(pnr);
 
         if (booking == null)
         {
@@ -245,13 +284,29 @@ public class Program
 
         Console.WriteLine();
         Console.WriteLine("===== BOOKING DETAILS =====");
+
         Console.WriteLine("PNR: " + booking.PNR);
-        Console.WriteLine("Passenger: " + booking.PassengerName);
-        Console.WriteLine("Train: " + booking.TrainName);
-        Console.WriteLine("Route: " + booking.Source + " to " + booking.Destination);
-        Console.WriteLine("Journey date: " + booking.JourneyDate.ToString("yyyy-MM-dd"));
-        Console.WriteLine("Number of seats: " + booking.NumberOfSeats);
-        Console.WriteLine("Total fare: " + booking.TotalFare.ToString("C"));
+
+        Console.WriteLine(
+            "Passenger: " + booking.PassengerName);
+
+        Console.WriteLine(
+            "Train: " + booking.TrainName);
+
+        Console.WriteLine(
+            "Route: " + booking.Source + " to " +
+            booking.Destination);
+
+        Console.WriteLine(
+            "Journey date: " +
+            booking.JourneyDate.ToString("yyyy-MM-dd"));
+
+        Console.WriteLine(
+            "Number of seats: " + booking.NumberOfSeats);
+
+        Console.WriteLine(
+            "Total fare: " + booking.TotalFare.ToString("C"));
+
         Console.WriteLine("Status: " + booking.Status);
     }
 
@@ -261,12 +316,15 @@ public class Program
         {
             Console.Write(message);
 
-            if (int.TryParse(Console.ReadLine(), out int value))
+            if (int.TryParse(
+                Console.ReadLine(),
+                out int value))
             {
                 return value;
             }
 
-            Console.WriteLine("Please enter a valid whole number.");
+            Console.WriteLine(
+                "Please enter a valid whole number.");
         }
     }
 }
